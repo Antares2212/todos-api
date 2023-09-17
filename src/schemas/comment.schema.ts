@@ -1,22 +1,24 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from "mongoose";
-import { Todos } from "./todos.schema";
 
 export type CommentDocument = Comment & Document
 
 @Schema()
 export class Comment {
-  @Prop({required: true})
+  @Prop({ required: true, unique: true })
+  id: number
+  
+  @Prop({ required: true })
   author: string
 
-  @Prop({required: true})
+  @Prop({ required: true })
   text: string
 
-  @Prop({required: true})
+  @Prop()
   date: Date
 
-  @Prop({ type: [{ type: Number, ref: 'Todos' }] })
-  task: Todos
+  @Prop({ required: true })
+  task: number
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment)

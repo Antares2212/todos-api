@@ -1,7 +1,6 @@
 import { Schema, Prop,SchemaFactory } from "@nestjs/mongoose";
 import { Document, Model } from "mongoose";
 import { Comment } from "./comment.schema";
-import { AutoIdService } from "src/services/auto-id.service";
 
 export type TodosDocument = Todos & Document
 
@@ -23,7 +22,7 @@ export class Todos {
   @Prop()
   date: Date
 
-  @Prop({ type: [{ type: Number, ref: 'Comment' }] })
+  @Prop({ type: [{ type: Object, ref: 'Comment' }] })
   comments: Comment[]
 }
 
