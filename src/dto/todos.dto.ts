@@ -4,4 +4,5 @@ export class TodosDto {
   readonly desc: string
   readonly status: string
   readonly date: Date
+  readonly comments: []
 }
