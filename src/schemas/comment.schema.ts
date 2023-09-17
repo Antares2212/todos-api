@@ -2,7 +2,7 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from "mongoose";
 import { Todos } from "./todos.schema";
 
-export type TodosDocument = Comment & Document
+export type CommentDocument = Comment & Document
 
 @Schema()
 export class Comment {

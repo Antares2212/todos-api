@@ -1,21 +1,26 @@
 import { Schema, Prop,SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Model } from "mongoose";
 import { Comment } from "./comment.schema";
+import { AutoIdService } from "src/services/auto-id.service";
 
 export type TodosDocument = Todos & Document
 
 @Schema()
 export class Todos {
-  @Prop({required: true})
+
+  @Prop({ required: true, unique: true })
+  id: number;
+
+  @Prop({ required: true })
   title: string
 
-  @Prop({required: true})
+  @Prop({ required: true })
   desc: string
 
-  @Prop({required: true})
+  @Prop({ required: true })
   status: string
 
-  @Prop({required: true})
+  @Prop()
   date: Date
 
   @Prop({ type: [{ type: Number, ref: 'Comment' }] })
