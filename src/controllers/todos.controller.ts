@@ -23,12 +23,15 @@ export class TodosController {
   }
 
   @Put(':id') 
-  update(@Param('id') id: number) {
-    return id
+  update(
+    @Param('id') id: number,
+    @Body() todosDto: TodosDto
+  ): Promise<Todos> {
+    return this.todosService.update(id, todosDto)
   }
 
-  @Delete('id')
+  @Delete(':id')
   delete(@Param('id') id: number) {
-    return id
+    return this.todosService.delete(id)
   }
 }
