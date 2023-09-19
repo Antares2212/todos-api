@@ -4,7 +4,7 @@ import { Model } from "mongoose";
 import { TodosDto } from "src/dto/todos.dto";
 import { Todos, TodosDocument } from "src/schemas/todos.schema";
 import { AutoIdService } from "./auto-id.service";
-import { TaskNotCreatedException } from "src/exceptions/custom-exceptions";
+import { TaskNotCreatedException, TaskNotFoundException } from "src/exceptions/custom-exceptions";
 
 @Injectable()
 export class TodosService {
@@ -20,6 +20,22 @@ export class TodosService {
 
   async getOne(id: number): Promise<Todos> {
     return this.TodosModel.findOne({_id: id}).exec()
+  }
+
+  async update(taskId: number, todosDto: TodosDto): Promise<Todos> {
+    const task = await this.TodosModel.findOneAndUpdate(
+      { id: taskId },
+      todosDto,
+      { new: true }
+    )
+    
+    if(!task) throw new TaskNotFoundException()
+   
+    return task
+  }
+
+  async delete(taskId: number): Promise<void> {
+    await this.TodosModel.findOneAndRemove({ id: taskId }).exec()
   }
 
   async create(todosDto: TodosDto): Promise<Todos> {
