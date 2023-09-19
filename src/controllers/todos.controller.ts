@@ -28,7 +28,7 @@ export class TodosController {
   }
 
   @Delete('id')
-  delete(@Param('id') id: Number) {
+  delete(@Param('id') id: number) {
     return id
   }
 }

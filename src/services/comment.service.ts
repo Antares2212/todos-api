@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Comment, CommentDocument } from 'src/schemas/comment.schema';
-import { AutoIdService } from './auto-id.service';
-import { commentDto } from 'src/dto/comment.dto';
-import { Todos, TodosDocument } from 'src/schemas/todos.schema';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { Comment, CommentDocument } from 'src/schemas/comment.schema'
+import { AutoIdService } from './auto-id.service'
+import { commentDto } from 'src/dto/comment.dto'
+import { Todos, TodosDocument } from 'src/schemas/todos.schema'
+import { CommentNotFoundException, TaskNotFoundException } from 'src/exceptions/custom-exceptions'
 
 @Injectable()
 export class CommentService {
@@ -14,18 +15,21 @@ export class CommentService {
     private readonly autoIdService: AutoIdService
   ) {}
 
+  async createComment(commentDto: commentDto, taskId: number): Promise<Comment> {
+    const newComment = new this.commentModel(commentDto);
+    newComment.id = await this.autoIdService.getNextSequence('comment');
+    newComment.task = taskId;
+    await newComment.save();
+  
+    return newComment;
+  }
+
   async create(taskId: number, commentDto: commentDto): Promise<Todos> {  
     const task = await this.todosModel.findOne({ id: taskId })      
+    
+    if (!task) throw new TaskNotFoundException()
 
-    if (!task) {
-      throw new Error('Нет такой таски')
-    }
-
-    const newComment = new this.commentModel(commentDto)
-    newComment.id = await this.autoIdService.getNextSequence('comment')
-    newComment.task = task.id
-    await newComment.save()
-
+    const newComment = await this.createComment(commentDto, taskId)
     task.comments.push(newComment)
     await task.save()
 
@@ -33,22 +37,16 @@ export class CommentService {
   }
 
   async update(taskId: number, commentId: number, commentDto: commentDto): Promise<Todos> {    
-    const task = await this.todosModel.findOne({ id: taskId })
-    const comment = await this.commentModel.findOne({ id: commentId })
+    const [task, comment] = await Promise.all([
+      this.todosModel.findOne({ id: taskId }),
+      this.commentModel.findOne({ id: commentId })
+    ])
     
-    if (!task) {
-      throw new Error('Нет такой таски')
-    }
-
-    if (!comment) {
-      throw new Error('Нет такого комментария')
-    }
+    if (!task) throw new TaskNotFoundException()
+    if (!comment) throw new CommentNotFoundException()
 
     const commentIndex = task.comments.findIndex(comment => comment.id = commentId)
-    if (commentIndex === -1) {
-      throw new Error('Комментарий не найден');
-    }
-
+    if (commentIndex === -1) throw new CommentNotFoundException()
     task.comments[commentIndex] = { ...task.comments[commentIndex], ...commentDto }
     await task.save()
 
@@ -56,19 +54,15 @@ export class CommentService {
   }
 
   async delete(taskId: number, commentId: number): Promise<Todos> {  
-    const task = await this.todosModel.findOne({ id: taskId });
-    if (!task) {
-      throw new Error('Task not found');
-    }
+    const task = await this.todosModel.findOne({ id: taskId })
+    if (!task) throw new TaskNotFoundException()
 
-    const commentIndex = task.comments.findIndex(comment => comment.id == commentId);
-    if (commentIndex === -1) {
-      throw new Error('Comment not found');
-    }
+    const commentIndex = task.comments.findIndex(comment => comment.id == commentId)
+    if (commentIndex === -1) throw new CommentNotFoundException()
  
-    task.comments.splice(commentIndex, 1);
-    await task.save();
+    task.comments.splice(commentIndex, 1)
+    await task.save()
 
-    return task;
+    return task
   }
 }

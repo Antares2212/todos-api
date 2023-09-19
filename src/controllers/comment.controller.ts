@@ -1,6 +1,5 @@
 import { Controller, Post, Body, Put, Param, Delete } from '@nestjs/common';
 import { commentDto } from 'src/dto/comment.dto';
-import { Comment } from 'src/schemas/comment.schema';
 import { Todos } from 'src/schemas/todos.schema';
 import { CommentService } from 'src/services/comment.service';
 
