@@ -4,6 +4,7 @@ import { Model } from "mongoose";
 import { TodosDto } from "src/dto/todos.dto";
 import { Todos, TodosDocument } from "src/schemas/todos.schema";
 import { AutoIdService } from "./auto-id.service";
+import { TaskNotCreatedException } from "src/exceptions/custom-exceptions";
 
 @Injectable()
 export class TodosService {
@@ -22,8 +23,13 @@ export class TodosService {
   }
 
   async create(todosDto: TodosDto): Promise<Todos> {
-    const newTodos = new this.TodosModel(todosDto)
-    newTodos.id = await this.autoIdService.getNextSequence('todos')
-    return newTodos.save()
+    try {
+      const newTodos = new this.TodosModel(todosDto)
+      newTodos.id = await this.autoIdService.getNextSequence('todos')
+      return newTodos.save()
+    } catch(error) {
+      console.error("Ошибка при создании todos:", error);
+      throw new TaskNotCreatedException();
+    }
   }
 }
